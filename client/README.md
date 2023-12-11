@@ -1,4 +1,4 @@
-# German-French Hackathon / Data Challenge (University of Passau)
+# Server application guide
 
 
 ### Get Started
