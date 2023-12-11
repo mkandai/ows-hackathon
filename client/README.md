@@ -1,4 +1,4 @@
-# Server application guide
+# Client application guide
 
 
 ### Get Started
