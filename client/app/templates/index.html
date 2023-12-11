@@ -1,0 +1,108 @@
+<DOCTYPE html>
+
+  <html>
+
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversational Search Engine</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+  </head>
+
+  <body>
+
+    <center>
+
+      <br />
+
+      <div class="card" style="width: 95%;height: 95%;">
+        <div class="card-body">
+
+          <center>
+
+            <div class="card"
+              style="width: 90%;height: 400px; dispaly: flex; flex-direction: column; overflow-y: scroll;"
+              class="chat__item__container" id="id_chat_item_container">
+
+              <div class="card-body">
+
+              </div>
+
+          </center>
+
+          <textarea class="form-control" style="width: 90%; margin: 20px; resize: none;" id="id_message_send_input"
+            rows="2" placeholder="Ask me anything..."></textarea>
+
+          <button type="submit" id="id_message_send_button" class="col-sm-2 btn btn-primary">Send</button>
+          </br> Or
+          <input type="file" style="width: 400px" id="id_upload_button" class="form-control"></button>
+
+        </div>
+
+      </div>
+
+    </center>
+
+    <!---->
+
+    <script>
+
+      const chatSocket = new WebSocket("ws://localhost:8080/");
+      chatSocket.onopen = function (e) {
+        console.log("The connection was setup successfully !");
+      };
+      chatSocket.onclose = function (e) {
+        console.log("Something unexpected happened !");
+      };
+      document.querySelector("#id_message_send_input").focus();
+      document.querySelector("#id_message_send_input").onkeyup = function (e) {
+        if (e.keyCode == 13) {
+          document.querySelector("#id_message_send_button").click();
+        }
+      };
+      document.querySelector("#id_message_send_button").onclick = function (e) {
+        var messageInput = document.querySelector(
+          "#id_message_send_input"
+        ).value;
+        chatSocket.send(JSON.stringify({ message: messageInput, username: "{{"user"}}"}));
+      };
+
+      window.addEventListener('load', function () {
+        document.querySelector('input[type="file"]').addEventListener('change', function (event) {
+          if (this.files && this.files[0]) {
+            const selectedFile = this.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              const base64String = e.target.result;
+
+              chatSocket.send(JSON.stringify({ message: base64String, username: "user" }));
+            };
+            reader.readAsDataURL(selectedFile);
+          }
+        });
+      });
+
+      chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        var div = document.createElement("div");
+        var position = "right";
+
+        if (data.username == "ai") {
+          position = "left";
+        }
+
+        div.innerHTML = '<div class="card" style="width: 50%; margin: 10px; float: ' + position + ';"><div class="card-body">' + data.message + '</div>';
+        document.querySelector("#id_message_send_input").value = "";
+
+        var id_chat_item_container = document.querySelector("#id_chat_item_container");
+        id_chat_item_container.appendChild(div);
+        id_chat_item_container.scrollTop = id_chat_item_container.scrollHeight;
+      };
+
+    </script>
+
+  </body>
+
+  </html>
